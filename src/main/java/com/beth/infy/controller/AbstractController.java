@@ -2,13 +2,22 @@ package com.beth.infy.controller;
 
 import com.beth.infy.util.CommonConstants;
 import com.google.gson.Gson;
+
+
+import javassist.*;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class AbstractController {
 
@@ -16,7 +25,7 @@ public class AbstractController {
     public static final Logger logger = LoggerFactory.getLogger(CommonConstants.LOGGER_FILE_NAME);
     String FILE_UPLOAD_LOCATION = CommonConstants.FILE_CONVERT_DESTINATION_FOLDER_LOCATION;
 
-    public boolean templateSkeletonAlreadyGenerated(String templateName) {
+    public boolean fileExists(String templateName) {
         File tmpDir = new File(templateName);
        return(tmpDir.exists());
     }
@@ -69,4 +78,56 @@ public class AbstractController {
         return null;
     }
 
+
+    protected void writeToFile(String fullPathFilename, String content) {
+
+        try {
+            FileUtils.writeStringToFile(new File(fullPathFilename), content, StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public Class loadClazz(String rootLocation, String fullyQualifiedClassName) throws IOException, ClassNotFoundException {
+        File root = new File(rootLocation);
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()});
+        Class clazz = Class.forName(fullyQualifiedClassName , true, classLoader);
+        return clazz;
+    }
+
+    public Class generateClazz(String fileName, String templateName,List<String> methods) throws IOException, ClassNotFoundException, NotFoundException, CannotCompileException {
+        Class clazz;
+        if (fileExists(fileName)) {
+            File root = new File(FILE_UPLOAD_LOCATION);
+            URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()});
+            clazz = Class.forName(templateName, true, classLoader);
+        } else {
+            clazz = classGenerator(templateName, methods);
+        }
+
+        return clazz;
+    }
+
+    private Class classGenerator(String ps009ClassName, List<String> methodList) throws CannotCompileException, IOException, NotFoundException {
+
+            ClassPool pool = ClassPool.getDefault();
+            pool.importPackage("com.beth.infy.domain.ConvertToXmlRequest");
+            CtClass superClazz = pool.get("com.beth.infy.templates.MappingTemplate");
+
+            CtClass ctClass = pool.makeClass(ps009ClassName, superClazz);
+
+            //TODO - the method uri should be in properties. its easy to change without deployment.
+
+            String generateXmlMethodBody = loadFileContents(methodList.get(0));
+            String modifyXmlMethodBody = loadFileContents(methodList.get(1));
+            String populateXmlMethodBody = loadFileContents(methodList.get(2));
+
+
+            ctClass.addMethod(CtMethod.make(generateXmlMethodBody, ctClass));
+            ctClass.addMethod(CtMethod.make(modifyXmlMethodBody, ctClass));
+            ctClass.addMethod(CtMethod.make(populateXmlMethodBody, ctClass));
+            ctClass.writeFile(FILE_UPLOAD_LOCATION);
+            return ctClass.toClass();
+    }
 }

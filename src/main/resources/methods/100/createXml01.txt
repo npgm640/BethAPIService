@@ -1,3 +1,3 @@
-public void createXml01() {
-    super.generateXmlDocument();
+public void createXml01(String xmlSchema) {
+    super.generateXmlDocument(xmlSchema);
 }

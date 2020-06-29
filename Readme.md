@@ -46,8 +46,12 @@ Pending tasks
 To start the application 
 ******************************************************
 From the project root folder , execute the below commands. 
-mvn clean install
-mvn spring-boot run.
+$ git clone <repo>>
+$ cd <project-name>
+
+"To build compile and install all dependencies"
+$ ./infy-build.sh   ==> runs on linux environement
+$ ./infy-start.sh   => start the service  http on localhost 8080
 
 **********************************************************
 API TESTING

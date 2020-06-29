@@ -67,7 +67,7 @@ public class AutoGenTemplateController extends AbstractController{
             //TODO - convert jsonString to object by using POJO classes. Generate POJO dynamically.
             String jsonString = convertFileContentToJson(fileContents, fileType);
 
-            if (templateSkeletonAlreadyGenerated(FILE_UPLOAD_LOCATION+"com/beth/infy/templates/autogen/"+templateRequest.getTemplateName()+".class")) {
+            if (fileExists(FILE_UPLOAD_LOCATION+templateRequest.getTemplateName()+".class")) {
                 File root = new File(FILE_UPLOAD_LOCATION);
                 URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { root.toURI().toURL() });
                 clazz = Class.forName(CommonConstants.FULLY_QUALIFIED_TEMPLATE_FOLDER+templateRequest.getTemplateName(), true, classLoader);
@@ -112,7 +112,7 @@ public class AutoGenTemplateController extends AbstractController{
 
         ClassPool pool = ClassPool.getDefault();
         CtClass superClazz = pool.get("com.beth.infy.templates.MappingTemplate");
-        CtClass ctClass = pool.makeClass(CommonConstants.FULLY_QUALIFIED_TEMPLATE_FOLDER+ps009ClassName, superClazz);
+        CtClass ctClass = pool.makeClass(ps009ClassName, superClazz);
 
         //TODO - the method uri should be in properties. its easy to change without deployment.
         String createXmlMethodFilename = CommonConstants.RESOURCE_FOLDER+ "methods/100/createXml01.txt";

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+setColor()
+{
+  tput setaf $1 2>/dev/null
+
+}
+
+resetColor()
+{
+  tput sgr0 2>/dev/null
+}
+
+echoError()
+{
+  setColor 1
+      printf $1
+       if [ ! -z "$1" ]
+       then
+
+  resetColor
+      printf " [$1]"
+      fi
+      printf "\n"
+resetColor
+return 0
+}
+
+echoMessage()
+{
+  setColor 4
+  printf "$1"
+  printf "\n"
+  resetColor
+  return 0
+
+}
