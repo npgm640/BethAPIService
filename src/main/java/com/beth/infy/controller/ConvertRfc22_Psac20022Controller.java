@@ -30,7 +30,7 @@ public class ConvertRfc22_Psac20022Controller extends AbstractController {
         String outputFileName = null;
         if (StringUtils.isEmpty(request.getTemplateMappingLocation())) {
 
-            if (request.getFileType().equalsIgnoreCase(CommonConstants.TEMPLATE_TYPE)) {
+            if (request.getTemplateType().equalsIgnoreCase(CommonConstants.TEMPLATE_TYPE)) {
                 outputFileName = CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION;
             }
             if (null == outputFileName) {
@@ -68,18 +68,14 @@ public class ConvertRfc22_Psac20022Controller extends AbstractController {
         fileOutputStream.flush();
         fileOutputStream.close(); */
         Class clazz;
-        List<String> methodList = new ArrayList<>();
-        methodList.add(CommonConstants.RESOURCE_FOLDER+ "methods/100/createXml01.txt");
-        methodList.add(CommonConstants.RESOURCE_FOLDER+ "methods/100/populateXmlData02.txt");
-        methodList.add(CommonConstants.RESOURCE_FOLDER+ "methods/100/populateXmlData03.txt");
 
-        clazz = generateClazz(FILE_UPLOAD_LOCATION+"com/beth/infy/templates/autogen/"+request.getTemplateName()+".class", request.getTemplateName(), methodList);
+        clazz = generateClazz(request);
 
         Object instance = clazz.newInstance();
         //invoke methods
 
         //modify xml based on mapping fields
         (clazz.getDeclaredMethod(CommonConstants.TEMPLATE_POPULATE_XML_METHOD_NAME,  String.class))
-                .invoke(instance, "/home/ranga/sandbox/springboot/psac009/"+request.getFileType()+".xml");
+                .invoke(instance, "/home/ranga/sandbox/springboot/psac009/"+request.getTemplateType()+".xml");
     }
 }

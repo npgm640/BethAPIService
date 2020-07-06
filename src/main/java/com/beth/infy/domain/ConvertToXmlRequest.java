@@ -3,22 +3,23 @@ package com.beth.infy.domain;
 import java.util.List;
 import java.util.Map;
 
-public class ConvertToXmlRequest {
-    private String fileType;
+public class ConvertToXmlRequest extends AbstractRequest {
+    private String templateType;
     private String content;
     private String mappingFields;
-    private long customerId;
+    private long clientId;
     private String schemaFileName;
     private String templateMappingLocation;
     private Map mapping;
     private String templateName;
+    private long userId;
 
-    public String getFileType() {
-        return fileType;
+    public String getTemplateType() {
+        return templateType;
     }
 
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
+    public void setTemplateType(String templateType) {
+        this.templateType = templateType;
     }
 
     public String getContent() {
@@ -29,12 +30,12 @@ public class ConvertToXmlRequest {
         this.content = content;
     }
 
-    public long getCustomerId() {
-        return customerId;
+    public long getClientId() {
+        return clientId;
     }
 
-    public void setCustomerId(long customerId) {
-        this.customerId = customerId;
+    public void setClientId(long clientId) {
+        this.clientId = clientId;
     }
 
     public String getSchemaFileName() {
@@ -75,6 +76,14 @@ public class ConvertToXmlRequest {
 
     public void setTemplateName(String templateName) {
         this.templateName = templateName;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
     //helper methods

@@ -1,6 +1,5 @@
 package com.beth.infy.templates;
 
-import com.beth.infy.domain.ConvertToXmlRequest;
 import com.beth.infy.util.CommonConstants;
 import jlibs.xml.sax.XMLDocument;
 import jlibs.xml.xsd.XSInstance;
@@ -11,21 +10,17 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
@@ -39,10 +34,6 @@ public class MappingTemplate implements IMappingTemplate {
     @Override
     public void generateXmlDocument(String schemaFilename) {
             try {
-                //TODO - need to pass the fileName as parameter to the method.
-                //String schemaFilename = "/home/ranga/sandbox/springboot/psac009/PSAC20022.xsd";
-                // instance.
-
                 final Document doc = loadXsdDocument(schemaFilename);
 
                 if (doc == null) {
@@ -82,7 +73,7 @@ public class MappingTemplate implements IMappingTemplate {
                 //Build the sample xml doc
                 //Replace first param to XMLDoc with a file input stream to write to file
                 QName rootElement = new QName(targetNamespace, "Document");
-                XMLDocument xmlDocument = new XMLDocument(new StreamResult( schemaFilename.substring(0, schemaFilename.indexOf(".")) + ".xml"), false, 4, null);
+                XMLDocument xmlDocument = new XMLDocument(new StreamResult( "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml"), false, 4, null);
                 xmlDocument.getNamespaceSupport().setSuggestPrefix("");
                 instance.generate(xsModel, rootElement, xmlDocument);
                 System.out.println("Xml generation completed");
@@ -126,7 +117,7 @@ public class MappingTemplate implements IMappingTemplate {
     }
 
     @Override
-    public void populateXmlData_02(String xmlFile) throws Exception {
+    public void modifyXml_01(String xmlFile) throws Exception {
 
         Document doc = DocumentBuilderFactory.newInstance()
                 .newDocumentBuilder().parse(new InputSource(xmlFile));
@@ -134,14 +125,10 @@ public class MappingTemplate implements IMappingTemplate {
         Node nodeElement = doc.getElementsByTagName("FICdtTrf").item(0);
         NodeList childList = nodeElement.getChildNodes();
 
-      /*  for (int i = 0; i < childList.getLength(); i++) {
-            Node node = childList.item(i);
-            modifyNodeIfExists(doc, node);
-        }*/
         modifyNodeIfExists(doc);
         // save the result
         Transformer xformer = TransformerFactory.newInstance().newTransformer();
-        String modifiedxmlFile = "/home/ranga/sandbox/springboot/psac009/PSAC20022_Modified.xml";
+        String modifiedxmlFile = "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml";
         xformer.transform
                 (new DOMSource(doc), new StreamResult(new File(modifiedxmlFile)));
         System.out.println("xml data modification completed...");
@@ -150,7 +137,7 @@ public class MappingTemplate implements IMappingTemplate {
 
 
     @Override
-    public void populateXmlData_03(String xmlFile) throws Exception {
+    public void populateXmlData_01(String xmlFile) throws Exception {
 
         Document doc = DocumentBuilderFactory.newInstance()
                 .newDocumentBuilder().parse(new InputSource(xmlFile));
@@ -158,14 +145,10 @@ public class MappingTemplate implements IMappingTemplate {
         Node nodeElement = doc.getElementsByTagName("FICdtTrf").item(0);
         NodeList childList = nodeElement.getChildNodes();
 
-      /*  for (int i = 0; i < childList.getLength(); i++) {
-            Node node = childList.item(i);
-            modifyNodeIfExists(doc, node);
-        }*/
         populateNodeIfExists(doc);
         // save the result
         Transformer xformer = TransformerFactory.newInstance().newTransformer();
-        String populateXmlFile = "/home/ranga/sandbox/springboot/psac009/PSAC20022_Populate.xml";
+        String populateXmlFile = "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml";
         xformer.transform
                 (new DOMSource(doc), new StreamResult(new File(populateXmlFile)));
         System.out.println("xml data population completed...");
@@ -222,90 +205,6 @@ public class MappingTemplate implements IMappingTemplate {
         }
     }
 
-    @Override
-    public void populateXmlData_01(String xmlFile) throws Exception {
-
-        try {
-            //TODO - need to pass the string dynamically
-            //String xmlFile = "/home/ranga/sandbox/springboot/psac009/PSAC20022.xml";
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
-
-            Document document = documentBuilder.parse(xmlFile);
-
-            //get the root element
-            Node root = document.getFirstChild();
-
-            Node topElement = document.getElementsByTagName("FICdtTrf").item(0);
-            NodeList topElementList = topElement.getChildNodes();
-            System.out.println("Top List - " + topElementList.toString());
-            //TODO - define strings in common constants file
-
-            //TODO -  need to get values from object.
-
-            Node nodeElement = document.getElementsByTagName("GrpHdr").item(0);
-            NodeList childList = nodeElement.getChildNodes();
-
-            for (int i = 0; i < childList.getLength(); i++) {
-                Node node = childList.item(i);
-
-                if ("MsgId".equalsIgnoreCase(node.getNodeName())) {
-                    node.setTextContent("NONREF");
-                }
-
-                if ("CreDtTm".equalsIgnoreCase(node.getNodeName())) {
-                    node.setTextContent(getCurrentDateTime());
-                }
-
-                if ("NbOfTxs".equalsIgnoreCase(node.getNodeName())) {
-                    node.setTextContent("1");
-                }
-
-                if ("SttlmInf".equalsIgnoreCase(node.getNodeName())) {
-                    Node nodeSubElement = document.getElementsByTagName("SttlmInf").item(0);
-                    NodeList childSubList = nodeElement.getChildNodes();
-                    for (int j = 0; j < childSubList.getLength(); j++) {
-                        if ("SttlmMtd".equalsIgnoreCase(node.getNodeName())) {
-                            node.setTextContent("CLRG");
-                        }
-                    }
-                }
-            }
-            //write the content into xml file.
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource domSource = new DOMSource(document);
-            StreamResult xmlResult = new StreamResult(new File(xmlFile));
-            transformer.transform(domSource, xmlResult);
-            System.out.println("XML data population completed...");
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-    }
-
-  /*  private Map<String, String> getMappingElements() {
-        Map<String, String> templateMapping = new HashMap<>();
-        templateMapping.put("121", "CdtTrfTxInf/PmtId/UETR");
-        templateMapping.put("20", "CdtTrfTxInf/PmtId/InstrId");
-        templateMapping.put("21", "CdtTrfTxInf/PmtId/EndToEndId");
-        templateMapping.put("52A", "IntrmyAgt1/FinInstnId/BICFI");
-        templateMapping.put("56A", "Dbtr/FinInstnId/BICFI");
-        templateMapping.put("57A", "CdtrAgt/FinInstnId/BICFI");
-        templateMapping.put("58A", "CdtrAcct/Id/Othr/Id");
-        templateMapping.put("58A.1", "Cdtr/FinInstnId/BICFI");
-
-        return templateMapping;
-
-    }*/
 
     private String getCurrentDateTime() {
 

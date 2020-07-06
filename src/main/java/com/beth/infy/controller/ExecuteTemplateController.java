@@ -37,7 +37,7 @@ public class ExecuteTemplateController extends AbstractController {
 
         if (StringUtils.isEmpty(request.getTemplateMappingLocation())) {
 
-            if (request.getFileType().equalsIgnoreCase(CommonConstants.TEMPLATE_TYPE)) {
+            if (request.getTemplateType().equalsIgnoreCase(CommonConstants.TEMPLATE_TYPE)) {
                 outputFileName = CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION;
             }
             if (null == outputFileName) {
@@ -63,7 +63,7 @@ public class ExecuteTemplateController extends AbstractController {
             return false;
         }
 
-        if (StringUtils.isEmpty(request.getFileType())) {
+        if (StringUtils.isEmpty(request.getTemplateType())) {
             return false;
         }
 
@@ -71,7 +71,7 @@ public class ExecuteTemplateController extends AbstractController {
             return false;
         }
 
-        if (StringUtils.isEmpty(request.getCustomerId())) {
+        if (StringUtils.isEmpty(request.getClientId())) {
             return false;
         }
 
@@ -102,11 +102,11 @@ public class ExecuteTemplateController extends AbstractController {
         Class clazz;
         try {
             List<String> methodList = new ArrayList<>();
-            methodList.add(CommonConstants.RESOURCE_FOLDER+ "methods/100/createXml01.txt");
-            methodList.add(CommonConstants.RESOURCE_FOLDER+ "methods/100/populateXmlData02.txt");
-            methodList.add(CommonConstants.RESOURCE_FOLDER+ "methods/100/populateXmlData03.txt");
+            methodList.add("classpath:methods/100/createXml01.txt");
+            methodList.add("classpath:methods/100/modifyXml01.txt");
+            methodList.add("classpath:methods/100/populateXmlData01.txt");
 
-            clazz = generateClazz(FILE_UPLOAD_LOCATION+"com/beth/infy/templates/autogen/"+request.getTemplateName()+".class", request.getTemplateName(), methodList);
+            clazz = generateClazz(request);
             
             /**** ranga 05/23 - from above either class loads if exists, or creates dynamcially.
              * once class exists, invoke the ncessary meethos dynamcally.

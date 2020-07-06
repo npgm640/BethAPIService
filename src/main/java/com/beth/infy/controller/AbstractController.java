@@ -1,28 +1,58 @@
 package com.beth.infy.controller;
 
+import com.beth.infy.domain.*;
+import com.beth.infy.model.*;
+import com.beth.infy.service.*;
 import com.beth.infy.util.CommonConstants;
 import com.google.gson.Gson;
-
-
 import javassist.*;
 import org.apache.commons.io.FileUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
 
 public class AbstractController {
 
+    @Autowired
+    ResourceLoader resourceLoader;
+
+    @Autowired
+    private TemplateService templateService;
+
+    @Autowired
+    private TemplateMappingService templateMappingService;
+
+    @Autowired
+    private ClientService clientService;
+
+    @Autowired
+    private TemplateClassService templateClassService;
+
+    @Autowired
+    private AuthorizationService userService;
+
+    final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
+
+
     public static final Gson gson = new Gson();
     public static final Logger logger = LoggerFactory.getLogger(CommonConstants.LOGGER_FILE_NAME);
+    //TODO - store in DB
     String FILE_UPLOAD_LOCATION = CommonConstants.FILE_CONVERT_DESTINATION_FOLDER_LOCATION;
 
     public boolean fileExists(String templateName) {
@@ -30,13 +60,40 @@ public class AbstractController {
        return(tmpDir.exists());
     }
 
-    public  String loadFileContents(String fileName) {
-        try {
+    public String getTemplateMappingLocationURL(AbstractRequest request) {
+
+        ConvertToXmlRequest req = (ConvertToXmlRequest) request;
+        ClientOrm clientOrm = clientService.getClient(req.getClientId());
+
+        if (StringUtils.isEmpty(clientOrm)) {
+            return null;
+        }
+        TemplateOrm templateOrm =  templateService.getTemplateUsing(clientOrm, req.getTemplateName(), req.getTemplateType());
+        return templateOrm.getTemplateMappingLocation();
+    }
+
+    public  String loadResourceFileContents(String classPath) throws IOException {
+       /* try {
             return new String(Files.readAllBytes(Paths.get(fileName)));
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        } */
+
+        Resource resource = resourceLoader.getResource(classPath);
+        InputStream inputStream = resource.getInputStream();
+        String data = null;
+        try
+        {
+            byte[] bdata = FileCopyUtils.copyToByteArray(inputStream);
+             data = new String(bdata, StandardCharsets.UTF_8);
+            LOGGER.info(data);
         }
+        catch (IOException e)
+        {
+            LOGGER.error("IOException", e);
+        }
+        return data;
     }
 
 
@@ -96,38 +153,131 @@ public class AbstractController {
         return clazz;
     }
 
-    public Class generateClazz(String fileName, String templateName,List<String> methods) throws IOException, ClassNotFoundException, NotFoundException, CannotCompileException {
+    public Class generateClazz(AbstractRequest request) throws IOException, ClassNotFoundException, NotFoundException, CannotCompileException {
         Class clazz;
-        if (fileExists(fileName)) {
-            File root = new File(FILE_UPLOAD_LOCATION);
-            URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()});
-            clazz = Class.forName(templateName, true, classLoader);
+
+        String templateName = null;
+        TemplateClassOrm templateClassOrm = null;
+
+        if (request instanceof ConvertToXmlRequest) {
+            ConvertToXmlRequest req =   (ConvertToXmlRequest) request;
+             templateName = getTemplateMappingUsing(req.getClientId(), req.getTemplateName(), req.getTemplateType());
+
+            if (StringUtils.isEmpty(templateName)) {
+                templateClassOrm = getTemplateClass(req);
+                clazz = classGenerator(templateClassOrm);
+            } else {
+
+                File root = new File(templateClassOrm.getClazzOutputLocation());
+                URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()});
+                clazz = Class.forName(templateName, true, classLoader);
+            }
+
         } else {
-            clazz = classGenerator(templateName, methods);
+            ConvertRFC22_PSAC20022Request req = (ConvertRFC22_PSAC20022Request) request;
+             templateName = getTemplateMappingUsing(req.getClientId(), req.getTemplateName(), req.getTemplateType());
+
+            if (StringUtils.isEmpty(templateName)) {
+                 templateClassOrm = getTemplateClass(req);
+                clazz = classGenerator(templateClassOrm);
+            } else {
+                File root = new File(templateClassOrm.getClazzOutputLocation());
+                URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()});
+                clazz = Class.forName(templateName, true, classLoader);
+            }
         }
 
         return clazz;
     }
 
-    private Class classGenerator(String ps009ClassName, List<String> methodList) throws CannotCompileException, IOException, NotFoundException {
+    private TemplateClassOrm getTemplateClass(AbstractRequest abstractRequest) {
+        TemplateClassOrm templateClassOrm = null;
+
+        if (abstractRequest instanceof ConvertToXmlRequest) {
+            ConvertToXmlRequest request = (ConvertToXmlRequest) abstractRequest;
+            ClientOrm clientOrm = clientService.getClient(request.getClientId());
+            if (StringUtils.isEmpty(clientOrm)) {
+                return null;
+            }
+            TemplateOrm templateOrm = templateService.getTemplateUsing(clientOrm, request.getTemplateName(), request.getTemplateType());
+
+            if (StringUtils.isEmpty(templateOrm)) {
+                return null;
+            }
+            templateClassOrm = templateClassService.getTemplateClassUsing(templateOrm, clientOrm);
+
+        } else if (abstractRequest instanceof ConvertRFC22_PSAC20022Request) {
+            ConvertRFC22_PSAC20022Request request = (ConvertRFC22_PSAC20022Request) abstractRequest;
+            ClientOrm clientOrm = clientService.getClient(request.getClientId());
+            if (StringUtils.isEmpty(clientOrm)) {
+                return null;
+            }
+            TemplateOrm templateOrm = templateService.getTemplateUsing(clientOrm, request.getTemplateName(), request.getTemplateType());
+            if (StringUtils.isEmpty(templateOrm)) {
+                return null;
+            }
+            templateClassOrm = templateClassService.getTemplateClassUsing(templateOrm, clientOrm);
+        }
+        return templateClassOrm;
+    }
+
+
+    private String getTemplateMappingUsing(long clientId, String templateName, String templateType) {
+        ClientOrm client = clientService.getClient(clientId);
+        TemplateOrm templateOrm = templateService.getTemplateUsing(client, templateName, templateType);
+        TemplateMappingOrm templateMappingOrm =  templateMappingService.getTemplateMappingUsing(templateOrm);
+
+        if (templateMappingOrm == null) {
+            return null;
+        }
+
+        return templateMappingOrm.getTemplate().getTemplateName();
+    }
+
+
+    private Class classGenerator(TemplateClassOrm templateClassOrm) throws CannotCompileException, IOException, NotFoundException {
 
             ClassPool pool = ClassPool.getDefault();
-            pool.importPackage("com.beth.infy.domain.ConvertToXmlRequest");
-            CtClass superClazz = pool.get("com.beth.infy.templates.MappingTemplate");
-
-            CtClass ctClass = pool.makeClass(ps009ClassName, superClazz);
-
-            //TODO - the method uri should be in properties. its easy to change without deployment.
-
-            String generateXmlMethodBody = loadFileContents(methodList.get(0));
-            String modifyXmlMethodBody = loadFileContents(methodList.get(1));
-            String populateXmlMethodBody = loadFileContents(methodList.get(2));
 
 
-            ctClass.addMethod(CtMethod.make(generateXmlMethodBody, ctClass));
-            ctClass.addMethod(CtMethod.make(modifyXmlMethodBody, ctClass));
-            ctClass.addMethod(CtMethod.make(populateXmlMethodBody, ctClass));
-            ctClass.writeFile(FILE_UPLOAD_LOCATION);
+            if (StringUtils.isEmpty(templateClassOrm)) {
+               return null;
+            }
+
+            pool.importPackage(templateClassOrm.getPackageName());
+            CtClass superClazz = pool.get(templateClassOrm.getSuperClazz());
+
+            CtClass ctClass = pool.makeClass(templateClassOrm.getClazzName(), superClazz);
+            List<String> methodList = formatMethodList(templateClassOrm.getMethodUris());
+
+            for (String methodString : methodList) {
+                ctClass.addMethod(CtMethod.make(loadResourceFileContents(methodString), ctClass));
+            }
+
+            ctClass.writeFile(templateClassOrm.getClazzOutputLocation());
             return ctClass.toClass();
+    }
+
+
+    private List<String> formatMethodList(String methodUris) {
+        String str[] = methodUris.split(";");
+        List<String> methodList = Arrays.asList(str);
+        return methodList;
+    }
+
+    public TemplateMappingOrm saveTemplateMapping(ConvertToXmlRequest request) {
+        TemplateMappingDto mappingDto = new TemplateMappingDto();
+        ClientOrm client = clientService.getClient(request.getClientId());
+        TemplateOrm templateOrm = templateService.getTemplateUsing(client, request.getTemplateName(), request.getTemplateType());
+        UserOrm userOrm = userService.getUser(request.getUserId());
+        mappingDto.setTemplateId(templateOrm.getTemplateId());
+        mappingDto.setMappingData(request.getMappingFields());
+        mappingDto.setActive("1");
+        mappingDto.setCrtdBy(userOrm.getUserName());
+        mappingDto.setLastMdfdBy(userOrm.getUserName());
+        mappingDto.setCrtdTs(new DateTime().toString());
+        mappingDto.setLastMdfdTs(new DateTime().toString());
+        TemplateMappingOrm mappingOrm = templateMappingService.save(mappingDto);
+        return mappingOrm;
     }
 }

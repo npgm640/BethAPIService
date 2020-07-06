@@ -44,8 +44,8 @@ public class AuthenticationController extends AbstractController {
         return ResponseEntity.ok(gson.toJson(response));
     }
 
-    @PostMapping(value = "/api/v1/register", produces= MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
+   @PostMapping(value = "/api/v1/register", produces= MediaType.APPLICATION_JSON_VALUE)
+   @ResponseBody
     public ResponseEntity<?> registerUser(@RequestBody UserDto user) throws Exception {
         CommonResponse response ;
         UserOrm userOrm;

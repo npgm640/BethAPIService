@@ -115,11 +115,11 @@ public class AutoGenTemplateController extends AbstractController{
         CtClass ctClass = pool.makeClass(ps009ClassName, superClazz);
 
         //TODO - the method uri should be in properties. its easy to change without deployment.
-        String createXmlMethodFilename = CommonConstants.RESOURCE_FOLDER+ "methods/100/createXml01.txt";
-        String populateXmlMethodFilename = CommonConstants.RESOURCE_FOLDER+ "methods/100/populateXmlData01.txt";
+        String createXmlMethodFilename = "classpath:methods/100/createXml01.txt";
+        String populateXmlMethodFilename = "classpath:methods/100/populateXmlData01.txt";
 
-        String generateXmlMethodBody = loadFileContents(createXmlMethodFilename);
-        String populateXmlMethodBody = loadFileContents(populateXmlMethodFilename);
+        String generateXmlMethodBody = loadResourceFileContents(createXmlMethodFilename);
+        String populateXmlMethodBody = loadResourceFileContents(populateXmlMethodFilename);
 
 
         ctClass.addMethod(CtMethod.make(generateXmlMethodBody, ctClass));

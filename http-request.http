@@ -1,0 +1,34 @@
+### Send POST request with json body
+POST http://localhost:8080/api/v1/generateXmlMapping
+
+Accept: application/json
+
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJiZXRoYXB1ZGkiLCJleHAiOjE1OTM4ODYwMzYsImlhdCI6MTU5Mzg4NDIzNn0.BvusF-HNVMmLVo02mX0UkoQAhedsyMiG8zo75FWs--n8pZunPeHh9-2Q7ocRbX8CSR3c_NEwYRLxIzZNdASU9w
+{
+  "fileType": "PSAC20022",
+  "customerId": "1",
+  "schemaFileName": "PSAC20022.xsd",
+  "templateMappingLocation": "/home/ranga/sandbox/springboot/psac009/",
+  "mappingFields": "121://CdtTrfTxInf/PmtId/UETR,20://CdtTrfTxInf/PmtId/InstrId, 21://CdtTrfTxInf/PmtId/EndToEndId,52A://IntrmyAgt1/FinInstnId/BICFI, 56A://Dbtr/FinInstnId/BICFI, 57A://CdtrAgt/FinInstnId/BICFI,58A://CdtrAcct/Id/Othr/Id,58A.1://Cdtr/FinInstnId/BICFI",
+  "templateName": "Rfc22_Psac2022"
+}
+
+<> 2020-07-04T013450.400.html
+<> 2020-07-04T013332.400.html
+<> 2020-07-04T013227.400.html
+
+###
+
+GET http://localhost:8080/api/v1/health
+Accept: application/json
+
+<> 2020-07-04T123512.200.json
+
+### Send POST request with json body
+POST http://localhost:8080/api/v1/login
+Content-Type: application/json
+
+{
+  "userName": "bethapudi",
+  "password": "nopassword"
+}
