@@ -1,18 +1,19 @@
 package com.beth.infy.domain;
 
-public class UploadRequestTemplateFile {
-    private String fileType;
+public class ConvertRFC22_PSAC20022Request extends AbstractRequest{
+    private String templateType;
     private String content;
-    private long customerId;
+    private long clientId;
     private String fileName;
     private String templateMappingLocation;
+    private String templateName;
 
-    public String getFileType() {
-        return fileType;
+    public String getTemplateType() {
+        return templateType;
     }
 
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
+    public void setTemplateType(String templateType) {
+        this.templateType = templateType;
     }
 
     public String getContent() {
@@ -23,12 +24,12 @@ public class UploadRequestTemplateFile {
         this.content = content;
     }
 
-    public long getCustomerId() {
-        return customerId;
+    public long getClientId() {
+        return clientId;
     }
 
-    public void setCustomerId(long customerId) {
-        this.customerId = customerId;
+    public void setClientId(long customerId) {
+        this.clientId = clientId;
     }
 
     public String getFileName() {
@@ -45,5 +46,13 @@ public class UploadRequestTemplateFile {
 
     public void setTemplateMappingLocation(String templateMappingLocation) {
         this.templateMappingLocation = templateMappingLocation;
+    }
+
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
     }
 }

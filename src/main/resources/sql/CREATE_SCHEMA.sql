@@ -1,0 +1,3 @@
+CREATE SCHEMA infy_schema;
+
+COMMIT WORK;
