@@ -47,6 +47,7 @@ public class GenerateXmlController extends AbstractController {
         }
 
         String result = generateTemplate(request);
+
         TemplateMappingOrm templateMappingOrm = null;
         if (result == null) {
             String errMsg = "Pls. correct the class mapping and try again.";

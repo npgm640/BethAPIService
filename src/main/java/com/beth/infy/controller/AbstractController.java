@@ -1,10 +1,16 @@
 package com.beth.infy.controller;
 
-import com.beth.infy.domain.*;
+import com.beth.infy.domain.AbstractRequest;
+import com.beth.infy.domain.ConvertRFC22_PSAC20022Request;
+import com.beth.infy.domain.ConvertToXmlRequest;
+import com.beth.infy.domain.TemplateMappingDto;
 import com.beth.infy.model.*;
 import com.beth.infy.service.*;
 import com.beth.infy.util.CommonConstants;
 import com.google.gson.Gson;
+import com.strobel.decompiler.Decompiler;
+import com.strobel.decompiler.DecompilerSettings;
+import com.strobel.decompiler.PlainTextOutput;
 import javassist.*;
 import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
@@ -13,18 +19,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class AbstractController {
 
@@ -69,6 +72,11 @@ public class AbstractController {
             return null;
         }
         TemplateOrm templateOrm =  templateService.getTemplateUsing(clientOrm, req.getTemplateName(), req.getTemplateType());
+
+        if (StringUtils.isEmpty(templateOrm)) {
+            return null;
+        }
+
         return templateOrm.getTemplateMappingLocation();
     }
 
@@ -162,12 +170,11 @@ public class AbstractController {
         if (request instanceof ConvertToXmlRequest) {
             ConvertToXmlRequest req =   (ConvertToXmlRequest) request;
              templateName = getTemplateMappingUsing(req.getClientId(), req.getTemplateName(), req.getTemplateType());
+             templateClassOrm = getTemplateClass(req);
 
             if (StringUtils.isEmpty(templateName)) {
-                templateClassOrm = getTemplateClass(req);
                 clazz = classGenerator(templateClassOrm);
             } else {
-
                 File root = new File(templateClassOrm.getClazzOutputLocation());
                 URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()});
                 clazz = Class.forName(templateName, true, classLoader);
@@ -176,9 +183,8 @@ public class AbstractController {
         } else {
             ConvertRFC22_PSAC20022Request req = (ConvertRFC22_PSAC20022Request) request;
              templateName = getTemplateMappingUsing(req.getClientId(), req.getTemplateName(), req.getTemplateType());
-
+            templateClassOrm = getTemplateClass(req);
             if (StringUtils.isEmpty(templateName)) {
-                 templateClassOrm = getTemplateClass(req);
                 clazz = classGenerator(templateClassOrm);
             } else {
                 File root = new File(templateClassOrm.getClazzOutputLocation());
@@ -255,7 +261,48 @@ public class AbstractController {
             }
 
             ctClass.writeFile(templateClassOrm.getClazzOutputLocation());
+
+            //TODO need to convert .java class
+        //String sourcePath = templateClassOrm.getClazzOutputLocation() + templateClassOrm.getClazzName();
+        // String destinationPath = "/home/ranga/sandbox/springboot/BethAPIService/src/main/java/com/beth/infy/templates/"+templateClassOrm.getClazzName();
+
+        //copyAndDecompileClassFile( sourcePath, destinationPath);
             return ctClass.toClass();
+
+    }
+
+    private void copyAndDecompileClassFile(String sourcePath, String destinationPath) {
+        //String classe = "Mt202_Psac2022";
+        /*List<String> classes = Arrays.asList("Mt202_Psac2022");
+        List<File> sourceDir = Arrays.asList(new File (sourcePath));
+        File outputDir = new File(destinationPath);
+        KrakatauLibrary krakatauLibrary = new KrakatauLibrary();
+        krakatauLibrary.decompile(sourceDir, classes, outputDir); */
+
+        try {
+            final FileOutputStream stream = new FileOutputStream(destinationPath);
+
+            try {
+                final OutputStreamWriter writer = new OutputStreamWriter(stream);
+
+                try {
+                    Decompiler.decompile(
+                            "com.beth.infy.templates.Mt202_Psac2022.java",
+                            new PlainTextOutput(writer),
+                            DecompilerSettings.javaDefaults()
+                    );
+                }
+                finally {
+                    writer.close();
+                }
+            }
+            finally {
+                stream.close();
+            }
+        }
+        catch (final IOException e) {
+            // handle error
+        }
     }
 
 
