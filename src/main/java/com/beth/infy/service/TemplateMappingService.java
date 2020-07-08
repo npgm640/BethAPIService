@@ -7,6 +7,7 @@ import com.beth.infy.repository.ITemplateMappingRepository;
 import com.beth.infy.repository.ITemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class TemplateMappingService {
@@ -22,16 +23,28 @@ public class TemplateMappingService {
     }
 
     public TemplateMappingOrm save(TemplateMappingDto mappingDto) {
-        TemplateMappingOrm orm = new TemplateMappingOrm();
+        TemplateMappingOrm templateMappingOrm = null;
+
         TemplateOrm templateOrm = templateRepository.findTemplateOrmByTemplateId(mappingDto.getTemplateId());
 
-        orm.setTemplate(templateOrm);
-        orm.setMappingData(mappingDto.getMappingData());
-        orm.setActive(mappingDto.getActive());
-        orm.setCreatedBy(mappingDto.getCrtdBy());
-        orm.setLastModifiedBy(mappingDto.getLastMdfdBy());
-        orm.setCreatedTimestamp(mappingDto.getCrtdTs());
-        orm.setLastModifiedDate(mappingDto.getLastMdfdTs());
-        return templateMappingRepository.save(orm);
+        templateMappingOrm = templateMappingRepository.findTemplateMappingOrmByTemplate(templateOrm);
+
+        if (StringUtils.isEmpty(templateMappingOrm)) {
+            templateMappingOrm.setTemplate(templateOrm);
+            templateMappingOrm.setMappingData(mappingDto.getMappingData());
+            templateMappingOrm.setActive(mappingDto.getActive());
+            templateMappingOrm.setCreatedBy(mappingDto.getCrtdBy());
+            templateMappingOrm.setLastModifiedBy(mappingDto.getLastMdfdBy());
+            templateMappingOrm.setCreatedTimestamp(mappingDto.getCrtdTs());
+            templateMappingOrm.setLastModifiedDate(mappingDto.getLastMdfdTs());
+        } else {
+            templateMappingOrm.setMappingData(mappingDto.getMappingData());
+            templateMappingOrm.setCreatedBy(mappingDto.getCrtdBy());
+            templateMappingOrm.setLastModifiedBy(mappingDto.getLastMdfdBy());
+            templateMappingOrm.setCreatedTimestamp(mappingDto.getCrtdTs());
+            templateMappingOrm.setLastModifiedDate(mappingDto.getLastMdfdTs());
+        }
+
+        return templateMappingRepository.save(templateMappingOrm);
     }
 }

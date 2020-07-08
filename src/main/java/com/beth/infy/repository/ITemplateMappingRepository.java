@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ITemplateMappingRepository extends JpaRepository<TemplateMappingOrm, Long> {
     TemplateMappingOrm findTemplateMappingOrmByTemplate(TemplateOrm template);
+
 }

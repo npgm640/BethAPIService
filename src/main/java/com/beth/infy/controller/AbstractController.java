@@ -2,7 +2,7 @@ package com.beth.infy.controller;
 
 import com.beth.infy.domain.AbstractRequest;
 import com.beth.infy.domain.ConvertRFC22_PSAC20022Request;
-import com.beth.infy.domain.ConvertToXmlRequest;
+import com.beth.infy.domain.TemplateMappingRequest;
 import com.beth.infy.domain.TemplateMappingDto;
 import com.beth.infy.model.*;
 import com.beth.infy.service.*;
@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.strobel.decompiler.Decompiler;
 import com.strobel.decompiler.DecompilerSettings;
 import com.strobel.decompiler.PlainTextOutput;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import javassist.*;
 import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
@@ -65,7 +66,7 @@ public class AbstractController {
 
     public String getTemplateMappingLocationURL(AbstractRequest request) {
 
-        ConvertToXmlRequest req = (ConvertToXmlRequest) request;
+        TemplateMappingRequest req = (TemplateMappingRequest) request;
         ClientOrm clientOrm = clientService.getClient(req.getClientId());
 
         if (StringUtils.isEmpty(clientOrm)) {
@@ -167,12 +168,14 @@ public class AbstractController {
         String templateName = null;
         TemplateClassOrm templateClassOrm = null;
 
-        if (request instanceof ConvertToXmlRequest) {
-            ConvertToXmlRequest req =   (ConvertToXmlRequest) request;
+        if (request instanceof TemplateMappingRequest) {
+            TemplateMappingRequest req =   (TemplateMappingRequest) request;
              templateName = getTemplateMappingUsing(req.getClientId(), req.getTemplateName(), req.getTemplateType());
+
              templateClassOrm = getTemplateClass(req);
 
-            if (StringUtils.isEmpty(templateName)) {
+             //if templateName is empty or overide template is true then generate template , else load existing template.
+            if ((StringUtils.isEmpty(templateName)) || (Boolean.valueOf(req.getTemplateOveride()))) {
                 clazz = classGenerator(templateClassOrm);
             } else {
                 File root = new File(templateClassOrm.getClazzOutputLocation());
@@ -199,8 +202,8 @@ public class AbstractController {
     private TemplateClassOrm getTemplateClass(AbstractRequest abstractRequest) {
         TemplateClassOrm templateClassOrm = null;
 
-        if (abstractRequest instanceof ConvertToXmlRequest) {
-            ConvertToXmlRequest request = (ConvertToXmlRequest) abstractRequest;
+        if (abstractRequest instanceof TemplateMappingRequest) {
+            TemplateMappingRequest request = (TemplateMappingRequest) abstractRequest;
             ClientOrm clientOrm = clientService.getClient(request.getClientId());
             if (StringUtils.isEmpty(clientOrm)) {
                 return null;
@@ -312,7 +315,7 @@ public class AbstractController {
         return methodList;
     }
 
-    public TemplateMappingOrm saveTemplateMapping(ConvertToXmlRequest request) {
+    public TemplateMappingOrm saveTemplateMapping(TemplateMappingRequest request) {
         TemplateMappingDto mappingDto = new TemplateMappingDto();
         ClientOrm client = clientService.getClient(request.getClientId());
         TemplateOrm templateOrm = templateService.getTemplateUsing(client, request.getTemplateName(), request.getTemplateType());

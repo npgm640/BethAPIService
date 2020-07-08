@@ -1,9 +1,10 @@
 package com.beth.infy.domain;
 
-import java.util.List;
+import org.springframework.util.StringUtils;
+
 import java.util.Map;
 
-public class ConvertToXmlRequest extends AbstractRequest {
+public class TemplateMappingRequest extends AbstractRequest {
     private String templateType;
     private String content;
     private String mappingFields;
@@ -13,6 +14,7 @@ public class ConvertToXmlRequest extends AbstractRequest {
     private Map mapping;
     private String templateName;
     private long userId;
+    private String templateOveride;
 
     public String getTemplateType() {
         return templateType;
@@ -82,6 +84,18 @@ public class ConvertToXmlRequest extends AbstractRequest {
         return userId;
     }
 
+    public String getTemplateOveride() {
+        return templateOveride;
+    }
+
+    public void setTemplateOveride(String templateOveride) {
+        if (StringUtils.isEmpty(templateOveride)) {
+            this.templateOveride = "false";
+        } else {
+            this.templateOveride = templateOveride;
+        }
+    }
+
     public void setUserId(long userId) {
         this.userId = userId;
     }
@@ -97,7 +111,7 @@ public class ConvertToXmlRequest extends AbstractRequest {
     public Class[] populateXml_01_parameters() {
         Class list[] = new Class[2];
         list[0] = String.class;
-        list[1] = ConvertToXmlRequest.class;
+        list[1] = TemplateMappingRequest.class;
         return list;
     }
 }

@@ -1,6 +1,6 @@
 package com.beth.infy.controller;
 
-import com.beth.infy.domain.ConvertToXmlRequest;
+import com.beth.infy.domain.TemplateMappingRequest;
 import com.beth.infy.domain.PSAC20022ResponseTemplateMapping;
 import com.beth.infy.util.CommonConstants;
 import javassist.CannotCompileException;
@@ -23,7 +23,7 @@ public class ExecuteTemplateController extends AbstractController {
 
     @PostMapping(value = "/api/v1/executeTemplate", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> generateTemplateMapping(@RequestBody ConvertToXmlRequest request) throws Exception {
+    public ResponseEntity<?> generateTemplateMapping(@RequestBody TemplateMappingRequest request) throws Exception {
         PSAC20022ResponseTemplateMapping response = new PSAC20022ResponseTemplateMapping();
         logger.info("Started generating xml template mapping file...");
 
@@ -57,7 +57,7 @@ public class ExecuteTemplateController extends AbstractController {
     private void populateXmlTemplate(Map mappingTemplateList) {
     }
 
-    private boolean validateFile(ConvertToXmlRequest request) {
+    private boolean validateFile(TemplateMappingRequest request) {
 
         if (StringUtils.isEmpty(request.getMappingFields()) ) {
             return false;
@@ -97,7 +97,7 @@ public class ExecuteTemplateController extends AbstractController {
     }
 
 
-    private void executeXmlTemplate(ConvertToXmlRequest request) {
+    private void executeXmlTemplate(TemplateMappingRequest request) {
 
         Class clazz;
         try {

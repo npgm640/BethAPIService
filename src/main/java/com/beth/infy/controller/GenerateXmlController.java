@@ -1,7 +1,7 @@
 package com.beth.infy.controller;
 
 import com.beth.infy.domain.CommonResponse;
-import com.beth.infy.domain.ConvertToXmlRequest;
+import com.beth.infy.domain.TemplateMappingRequest;
 import com.beth.infy.domain.PSAC20022ResponseTemplateMapping;
 import com.beth.infy.model.TemplateMappingOrm;
 import com.beth.infy.util.CommonConstants;
@@ -25,7 +25,7 @@ public class GenerateXmlController extends AbstractController {
 
     @PostMapping(value = "/api/v1/generateXmlMapping", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> generateTemplateMapping(@RequestBody ConvertToXmlRequest request) throws Exception {
+    public ResponseEntity<?> generateTemplateMapping(@RequestBody TemplateMappingRequest request) throws Exception {
 
         logger.info("***********Started generating xml template mapping ...**********");
 
@@ -73,7 +73,7 @@ public class GenerateXmlController extends AbstractController {
     }
 
 
-    private boolean validateRequest(ConvertToXmlRequest request) {
+    private boolean validateRequest(TemplateMappingRequest request) {
 
         if (StringUtils.isEmpty(request.getMappingFields())) {
             return false;
@@ -90,6 +90,7 @@ public class GenerateXmlController extends AbstractController {
         if (StringUtils.isEmpty(request.getClientId())) {
             return false;
         }
+
         request.setMapping(convertMappingTemplateListToArray(request.getMappingFields()));
         return true;
     }
@@ -108,7 +109,7 @@ public class GenerateXmlController extends AbstractController {
     }
 
 
-    private String generateTemplate(ConvertToXmlRequest request) {
+    private String generateTemplate(TemplateMappingRequest request) {
         Class clazz = null;
         try {
             clazz = generateClazz(request);
