@@ -13,3 +13,6 @@ VALUES (1, 'Mt202_Psac2022', 'psac2022', '/home/ranga/sandbox/springboot/psac009
 
 insert into infy_schema.TEMPLATE_METHOD (TEMPLATE_ID, CLIENT_ID, METHOD_VALUE, DESCRIPTION, ACTIVE, CRTD_BY, LAST_MDFD_BY, CRTD_TS, LAST_MDFD_TS)
 VALUES (4,1, 'classpath:methods/1/populateXmlData01.txt', 'Populate xml template', 1, 'admin', 'admin', '06-05-2020 14:57:33', '06-05-2020 14:57:33');
+
+
+INSERT INTO inf_schema.

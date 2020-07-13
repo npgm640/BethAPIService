@@ -1,4 +1,5 @@
 
+
 CREATE TABLE infy_schema.USER
 (
     USER_ID         int(20) NOT NULL AUTO_INCREMENT,
@@ -17,7 +18,7 @@ CREATE TABLE infy_schema.USER
     KEY USER_NAME_IDX (USER_NAME)
 );
 
-commit;
+
 
 CREATE TABLE infy_schema.CLIENT
 (
@@ -118,6 +119,21 @@ create table infy_schema.TEMPLATE_CLASS
 		foreign key (TEMPLATE_ID) references TEMPLATE (TEMPLATE_ID)
 );
 
+CREATE TABLE infy_schema.MT202
+(
+    MT202_ID        int(20)         NOT NULL AUTO_INCREMENT,
+    TAG             varchar(100)    NOT NULL,
+    FIELD_NAME      varchar(100)    NOT NULL,
+    STATUS          varchar(100)    NOT NULL,
+    ACTIVE          tinyint(1)      NOT NULL DEFAULT '1',
+    CRTD_BY         varchar (255)   DEFAULT NULL,
+    LAST_MDFD_BY    varchar(255)    DEFAULT NULL,
+    CRTD_TS         varchar(50)     NOT NULL DEFAULT '00-00-0000 00:00:00' ,
+    LAST_MDFD_TS    varchar(50)     NOT NULL DEFAULT '00-00-0000 00:00:00' ,
+    PRIMARY KEY (MT202_ID)
+);
 
 
 COMMIT;
+
+

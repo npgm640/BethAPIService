@@ -15,4 +15,8 @@ public class TemplateService {
     public TemplateOrm getTemplateUsing(ClientOrm client, String tempName, String tempType) {
        return templateRespository.findTemplateOrmByClientAndTemplateNameAndTemplateType(client, tempName, tempType);
     }
+
+    public TemplateOrm getTemplate(int i) {
+        return templateRespository.findTemplateOrmByTemplateId(i);
+    }
 }

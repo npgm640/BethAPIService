@@ -22,7 +22,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -33,6 +35,9 @@ public class MappingTemplate implements IMappingTemplate {
 
     @Override
     public void generateXmlDocument(String schemaFilename) {
+
+            //TODO - the xmlFileName string should be part of method parameter
+            String xmlFileName = "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml";
             try {
                 final Document doc = loadXsdDocument(schemaFilename);
 
@@ -53,7 +58,6 @@ public class MappingTemplate implements IMappingTemplate {
                     targetNamespace = "http://jlibs.org";
                 }
 
-
                 //Parse the file into an XSModel object
 
                 org.apache.xerces.xs.XSModel xsModel = new XSParser().parse(schemaFilename);
@@ -73,10 +77,10 @@ public class MappingTemplate implements IMappingTemplate {
                 //Build the sample xml doc
                 //Replace first param to XMLDoc with a file input stream to write to file
                 QName rootElement = new QName(targetNamespace, "Document");
-                XMLDocument xmlDocument = new XMLDocument(new StreamResult( "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml"), false, 4, null);
+                XMLDocument xmlDocument = new XMLDocument(new StreamResult( xmlFileName), false, 4, null);
                 xmlDocument.getNamespaceSupport().setSuggestPrefix("");
                 instance.generate(xsModel, rootElement, xmlDocument);
-                System.out.println("Xml generation completed");
+                System.out.println("Xml generated successfully in location - " + xmlFileName);
             } catch (TransformerConfigurationException e)
             {
                 // TODO Auto-generated catch block
@@ -128,9 +132,9 @@ public class MappingTemplate implements IMappingTemplate {
         modifyNodeIfExists(doc);
         // save the result
         Transformer xformer = TransformerFactory.newInstance().newTransformer();
-        String modifiedxmlFile = "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml";
+       // String modifiedxmlFile = "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml";
         xformer.transform
-                (new DOMSource(doc), new StreamResult(new File(modifiedxmlFile)));
+                (new DOMSource(doc), new StreamResult(new File(xmlFile)));
         System.out.println("xml data modification completed...");
 
     }
@@ -139,13 +143,53 @@ public class MappingTemplate implements IMappingTemplate {
     @Override
     public void populateXmlData_01(String xmlFile) throws Exception {
 
-        Document doc = DocumentBuilderFactory.newInstance()
-                .newDocumentBuilder().parse(new InputSource(xmlFile));
+        //TODO the MT202.txt file should be part of parameter.
+        String mt202FilePath = "/home/ranga/sandbox/springboot/psac009/1/input/MT202.txt";
+        String templateName = "Mt202_Psac2022";
+        String templateType = "psac2022";
+        String clientId = "1";
 
-        Node nodeElement = doc.getElementsByTagName("FICdtTrf").item(0);
-        NodeList childList = nodeElement.getChildNodes();
+        if (!fileExists(mt202FilePath) ) {
+                System.err.println("File - " + mt202FilePath + " doesn't exist");
+                System.exit(1);
+        }
 
-        populateNodeIfExists(doc);
+      /*  if (!fileExists(xmlFile) ) {
+            System.err.println("File - " + xmlFile + " doesn't exist");
+            System.exit(1);
+        }
+
+        if (StringUtils.isEmpty(templateName)) {
+            System.err.println("Template Name is required and cannot be empty");
+            System.exit(1);
+        }
+
+        if (StringUtils.isEmpty(templateType)) {
+            System.err.println("Template Type is required and cannot be empty");
+            System.exit(1);
+        }
+
+        if (StringUtils.isEmpty(client)) {
+            System.err.println("Client name is required and cannot be empty");
+            System.exit(1);
+        } */
+        Document doc = null;
+        Node nodeElement = null;
+        NodeList childList = null;
+
+        if (templateType.equals(CommonConstants.TEMPLATE_TYPE_PSAC2022)) {
+            doc = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder().parse(new InputSource(xmlFile));
+             nodeElement = doc.getElementsByTagName("FICdtTrf").item(0);
+             childList = nodeElement.getChildNodes();
+        }
+
+        if (doc == null) {
+            System.err.println("Template Name - " + templateName + " with type - " + templateType + " not supported.");
+            System.exit(1);
+        }
+
+        populateNodeIfExists(doc, mt202FilePath);
         // save the result
         Transformer xformer = TransformerFactory.newInstance().newTransformer();
         String populateXmlFile = "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml";
@@ -159,8 +203,19 @@ public class MappingTemplate implements IMappingTemplate {
 
         // locate the node(s)
         XPath xpath = XPathFactory.newInstance().newXPath();
+
+
+       // Map<String, String> me = convertMappingTemplateListToArray(loadFileContents(CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION+"TemplateMappingFields.txt"));
+
+
+       /* ClientOrm clientOrm = clientService.getClient(1);
+        System.out.println("Client Orm loaded");
+        TemplateOrm templateOrm = templateService.getTemplate(2);
+        System.out.println("Template Orm loaded"); */
         Map<String, String> me = convertMappingTemplateListToArray(loadFileContents(CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION+"TemplateMappingFields.txt"));
-        //Map<String, String> mev = convertMappingTemplateListToArray(loadFileContents(CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION+"TemplateMappingValues.txt"));
+      //  Map<String, String> me = convertMappingTemplateListToArray(loadFileContents(templateMappingService.getTemplateMappingUsing(templateOrm).getMappingData()));
+       // Map<String, String> mev = convertMappingTemplateListToArray(loadFileContents(CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION+"TemplateMappingValues.txt"));
+      //  System.out.println("Mapping Contents - " + me.toString());
         Iterator it = me.entrySet().iterator();
 
         while (it.hasNext()) {
@@ -181,13 +236,17 @@ public class MappingTemplate implements IMappingTemplate {
         }
     }
 
-    private  void populateNodeIfExists(Document doc) throws Exception {
+    private  void populateNodeIfExists(Document doc, String mt202FilePath) throws Exception {
 
         // locate the node(s)
         XPath xpath = XPathFactory.newInstance().newXPath();
+     //   ClientOrm clientOrm = clientService.getClient(1);
+      //  TemplateOrm templateOrm = templateService.getTemplate(2);
         Map<String, String> me = convertMappingTemplateListToArray(loadFileContents(CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION+"TemplateMappingFields.txt"));
-       // Map<String, String> mev = convertMappingTemplateListToArray(loadFileContents(CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION+"TemplateMappingValues.txt"));
-        Map<String, String> mev = getMappingElementValues();
+     //   Map<String, String> me = convertMappingTemplateListToArray(loadFileContents(templateMappingService.getTemplateMappingUsing(templateOrm).getMappingData()));
+
+        // Map<String, String> mev = convertMappingTemplateListToArray(loadFileContents(CommonConstants.PS009_TEMPLATE_MAPPING_LOCATION+"TemplateMappingValues.txt"));
+        Map<String, String> mev = getMappingElementValues(mt202FilePath);
         Iterator it = me.entrySet().iterator();
 
         while (it.hasNext()) {
@@ -244,9 +303,9 @@ public class MappingTemplate implements IMappingTemplate {
         return templateMapping;
     }
 
-    public static Map<String, String> getMappingElementValues() {
-        Map<String, String> templateMapping = new HashMap<>();
-        templateMapping.put("121", "0234cd54-dcf7-4361-b87f-6c0ddbaab3a2");
+    public  Map<String, String> getMappingElementValues(String mt202File) {
+       /*Map<String, String> templateMapping = new HashMap<>();
+       templateMapping.put("121", "0234cd54-dcf7-4361-b87f-6c0ddbaab3a2");
         templateMapping.put("20", "AT78096594500102");
         templateMapping.put("21", "FT39BT003401");
         templateMapping.put("52A", "BANKUS33XXX");
@@ -254,9 +313,66 @@ public class MappingTemplate implements IMappingTemplate {
         templateMapping.put("56A.1", "PARBGB2LLON");
         templateMapping.put("57A", "INSECHZZXXX");
         templateMapping.put("58A", "/GB16RBOS16043110339295");
-        templateMapping.put("58A.1", "BANKCHZZXXX");
+        templateMapping.put("58A.1", "BANKCHZZXXX"); */
 
-        return templateMapping;
+        BufferedReader reader;
+        Map<String, String> tagMap = new HashMap<>();
+        try {
+            reader = new BufferedReader(new FileReader(mt202File));
+            String line = reader.readLine();
+
+            while (line != null) {
+              //  System.out.println(line);
+                List<String> tagItems = getTagItems();
+                for(String tag: tagItems) {
+                    if (line.startsWith(tag)) {
+                        String splitArray[]= line.split(":");
+                       // System.out.println(splitArray.toString());
+                        if (splitArray.length == 3) {
+                            if ((":"+splitArray[1]).equals(tag) ) {
+                                tagMap.put(splitArray[1],splitArray[2]);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // read next line
+                line = reader.readLine();
+            }
+            reader.close();
+          //  System.out.println(tagMap.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return tagMap;
+    }
+
+  /*  private List<String> getTagItems() {
+        List<Mt202Orm> mt202OrmList = mt202Service.getAllActiveMt202Items(1);
+        List<String> results = new ArrayList<>();
+        for (Mt202Orm each : mt202OrmList) {
+            results.add(each.getTag());
+        }
+        return results;
+    } */
+
+    private  List<String> getTagItems() {
+        List <String> aList = new ArrayList<>();
+        aList.add(":20");
+        aList.add(":21");
+        aList.add(":32A");
+        aList.add(":52A");
+        aList.add(":56A");
+        aList.add(":57A");
+        aList.add(":58A");
+        return aList;
+    }
+
+    public boolean fileExists(String templateName) {
+        File tmpDir = new File(templateName);
+        return(tmpDir.exists());
     }
 
 }

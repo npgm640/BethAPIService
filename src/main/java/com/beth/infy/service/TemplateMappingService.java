@@ -30,6 +30,7 @@ public class TemplateMappingService {
         templateMappingOrm = templateMappingRepository.findTemplateMappingOrmByTemplate(templateOrm);
 
         if (StringUtils.isEmpty(templateMappingOrm)) {
+            templateMappingOrm = new TemplateMappingOrm();
             templateMappingOrm.setTemplate(templateOrm);
             templateMappingOrm.setMappingData(mappingDto.getMappingData());
             templateMappingOrm.setActive(mappingDto.getActive());

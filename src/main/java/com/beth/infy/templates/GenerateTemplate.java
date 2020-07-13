@@ -1,8 +1,13 @@
 package com.beth.infy.templates;
 
+import com.beth.infy.service.TemplateService;
 import com.beth.infy.util.CommonConstants;
-import javassist.*;
-import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -30,35 +35,40 @@ public class GenerateTemplate  {
             }
         } */
         //TODO need to retreive from Database.
-            String xmlSchemaFileName = "/home/ranga/sandbox/springboot/psac009/1/input/PSAC20022.xsd";
+        String xmlSchemaFileName = "/home/ranga/sandbox/springboot/psac009/1/input/PSAC20022.xsd";
         String xmlFileName = "/home/ranga/sandbox/springboot/psac009/1/output/PSAC20022.xml";
-        String templateName = "Rfc22_Psac2022";
+        String mt202FilePath = "/home/ranga/sandbox/springboot/psac009/1/input/MT202.txt";
+        String templateName = "Mt202_Psac2022";
+        String templateType = "psac2022";
+        String clientId = "1";
 
-        System.out.println("Generating XML Document started...");
-        String rootLocation = CommonConstants.FILE_CONVERT_DESTINATION_FOLDER_LOCATION;
+        System.out.println("Generating XML Document started for consortium - " + clientId + " with templateId - " + templateName);
+        String classRootLocation = CommonConstants.FILE_CONVERT_DESTINATION_FOLDER_LOCATION;
 
         ClassPool pool = ClassPool.getDefault();
-        pool.insertClassPath(rootLocation);
-        CtClass ctClass = pool.get("Mt202_Psac2022");
-        
+        pool.insertClassPath(classRootLocation);
+        CtClass ctClass = pool.get(templateName);
+
         Class clazz = ctClass.toClass();
 
-        System.out.println("Class loaded - "+ clazz.getName());
+        System.out.println("Auto Gen Template loaded - "+ clazz.getName()+".class");
 
         Object instance = clazz.newInstance();
+        //TODO - need to pass ths strings dynamically to avoid hard coding path names in create/modify/populate xml"
         //invoke methods
-        System.out.println("Invoking create xml method..");
+        System.out.println("Generating xml method using schema - " + xmlSchemaFileName);
         (clazz.getDeclaredMethod(CommonConstants.TEMPLATE_CREATE_XML_METHOD_NAME, String.class))
                     .invoke(instance, xmlSchemaFileName);
-        System.out.println("Xml generated");
+
         //modify xml based on mapping fields
+        System.out.println("Modifying  xml process started with required mapping fields..");
         (clazz.getDeclaredMethod(CommonConstants.TEMPLATE_MODIFY_XML_METHOD_NAME,  String.class))
                     .invoke(instance, xmlFileName);
+
         //populate xml based on mapping fields
+        System.out.println("Xml data population started using: " + mt202FilePath);
         (clazz.getDeclaredMethod(CommonConstants.TEMPLATE_POPULATE_XML_METHOD_NAME,  String.class))
                 .invoke(instance, xmlFileName);
-
-
 
     }
     

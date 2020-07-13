@@ -21,7 +21,9 @@ public class CommonConstants {
     public static final String TEMPLATE_MODIFY_XML_METHOD_NAME = "modifyXml01";
     public static final String TEMPLATE_POPULATE_XML_METHOD_NAME = "populateXmlData01";
     public static final String TEMPLATE_TYPE = "PSAC20022";
-    public static final String PS009_TEMPLATE_MAPPING_LOCATION = "/home/ranga/sandbox/springboot/psac009/";
+    public static final String PS009_TEMPLATE_MAPPING_LOCATION = "/home/ranga/sandbox/springboot/psac009/1/input/";
     public static final String ACTIVE = "1";
     public static final String INACTIVE = "0";
+    public static final String TEMPLATE_TYPE_MT202 = "mt202";
+    public static final String TEMPLATE_TYPE_PSAC2022 = "psac2022";
 }

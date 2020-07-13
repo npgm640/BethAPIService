@@ -12,6 +12,7 @@ public class ClientService {
     private IClientRepository clientRepository;
 
     public ClientOrm getClient(long clientId) {
+
         return clientRepository.findByClientId(clientId);
     }
 
